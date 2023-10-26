@@ -1,33 +1,21 @@
 # Load file
 data <- read.csv("Wholesale_customers_data.csv")
 
-
 calculate_z_scores <- function(data) {
-  # Split the data by region
-  data_by_region <- split(data, data$Region)
-  
-  # Calculate the mean and standard deviation for each region
-  region_stats <- lapply(data_by_region, function(region_data) {
-    col_stats <- apply(region_data[, 3:8], 2, function(x) {
-      list(mean = mean(x), sd = sd(x))
-    })
-    return(col_stats)
+  # Calculate the mean and standard deviation for each column
+  column_stats <- apply(data[, 3:8], 2, function(x) {
+    mean_val <- mean(x, na.rm = TRUE)
+    sd_val <- sd(x, na.rm = TRUE)
+    if (sd_val == 0) {
+      # Avoid division by zero when standard deviation is 0
+      z_score <- 0
+    } else {
+      z_score <- (x - mean_val) / sd_val
+    }
+    return(z_score)
   })
   
-  # Calculate Z-scores for each customer
-  z_scores <- lapply(data_by_region, function(region_data) {
-    region_stats <- apply(region_data[, 3:8], 2, function(x) {
-      list(mean = mean(x), sd = sd(x))
-    })
-    customer_z_scores <- sweep(region_data[, 3:8], 2, unlist(region_stats), "-")
-    customer_z_scores <- sweep(customer_z_scores, 2, unlist(region_stats), "/")
-    return(customer_z_scores)
-  })
-  
-  # Combine Z-scores for all customers
-  all_z_scores <- do.call(rbind, z_scores)
-  
-  return(all_z_scores)
+  return(column_stats)
 }
 
 z_scores <- calculate_z_scores(data)
