@@ -2,7 +2,7 @@
 data <- read.csv("Wholesale_customers_data.csv")
 
 
-calculate_z_scores <- function(data) {
+calculate_z_scores <- function(data, outlier_threshold = NULL) {
   # Split the data by region
   data_by_region <- split(data, data$Region)
   
@@ -21,6 +21,13 @@ calculate_z_scores <- function(data) {
     })
     customer_z_scores <- sweep(region_data[, 3:8], 2, unlist(region_stats), "-")
     customer_z_scores <- sweep(customer_z_scores, 2, unlist(region_stats), "/")
+    
+    if (!is.null(outlier_threshold)) {
+      # Identify and replace values exceeding the threshold with NA
+      outliers <- abs(customer_z_scores) > outlier_threshold
+      customer_z_scores[outliers] <- NA
+    }
+    
     return(customer_z_scores)
   })
   
@@ -30,5 +37,7 @@ calculate_z_scores <- function(data) {
   return(all_z_scores)
 }
 
-z_scores <- calculate_z_scores(data)
+# Call the function with an outlier threshold
+z_scores <- calculate_z_scores(data, outlier_threshold = 2)
 print(round(z_scores, 4))
+
