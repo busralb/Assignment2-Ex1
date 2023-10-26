@@ -1,0 +1,54 @@
+---
+title: "Demonstration of the calculate_z_scores Function"
+date: "AT 2023"
+output: html_document
+---
+
+## Introduction:
+This document provides a brief demonstration of the Z-Scores calculation function and its advantages compared to the initial code. The purpose of the modified code is to calculate Z-Scores for each customer based on the mean and standard deviation. It also allows for the identification and handling of outliers based on a specified threshold.
+
+The initial function -takes one parameter as argument- is designed to calculate Z-scores for each customer in a dataset. It calculates Z-scores to standardize the features of data, indicating how many standard deviations a particular customer's data point is from the mean.
+
+On the other hand, the new function with new functionality can calculate Z-scores for each column (feature) in a dataset, and also optionally, it can handle outliers by replacing values that exceed a specified threshold with NA.
+
+Below we can see the difference at the output as we change the outlier_threshold value. 
+
+```{r p1}
+data <- read.csv("Wholesale_customers_data.csv")
+
+calculate_z_scores <- function(data, outlier_threshold = NULL) {
+  # Calculate the mean and standard deviation for each column
+  column_stats <- apply(data[, 3:8], 2, function(x) {
+    mean_val <- mean(x, na.rm = TRUE)
+    sd_val <- sd(x, na.rm = TRUE)
+    if (sd_val == 0) {
+      # Avoid division by zero when standard deviation is 0
+      z_score <- 0
+    } else {
+      z_score <- (x - mean_val) / sd_val
+    }
+    return(z_score)
+  })
+
+  if (!is.null(outlier_threshold)) {
+    # Identify and replace values exceeding the threshold with NA
+    outliers <- abs(column_stats) > outlier_threshold
+    column_stats[outliers] <- NA
+  }
+
+  return(column_stats)
+}
+
+# Create a vector of outlier thresholds (1, 2, and 3)
+thresholds <- c(1, 2, 3)
+
+# Loop through the thresholds and calculate/print Z-scores for each
+for (threshold in thresholds) {
+  z_scores <- calculate_z_scores(data, outlier_threshold = threshold)
+  cat("Z-Scores with Outlier Threshold =", threshold, "\n")
+  print(round(head(z_scores), 4))
+  cat("\n")
+}
+
+```
+As we increased the threshold value from 1 to 3, we observed a notable change in the function's behavior. With a higher threshold, fewer data points were considered outliers. This higher threshold made the function less aggressive in marking data points as outliers, allowing more values to be retained in the output.
