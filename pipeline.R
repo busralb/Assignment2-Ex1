@@ -26,4 +26,3 @@ calculate_z_scores <- function(data, outlier_threshold = NULL) {
 # Call the function with an outlier threshold
 z_scores <- calculate_z_scores(data, outlier_threshold = 2)
 print(round(z_scores, 4))
-
