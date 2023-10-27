@@ -1,7 +1,6 @@
-# Load file
 data <- read.csv("Wholesale_customers_data.csv")
 
-calculate_z_scores <- function(data) {
+calculate_z_scores <- function(data, outlier_threshold = NULL) {
   # Calculate the mean and standard deviation for each column
   column_stats <- apply(data[, 3:8], 2, function(x) {
     mean_val <- mean(x, na.rm = TRUE)
@@ -13,10 +12,17 @@ calculate_z_scores <- function(data) {
       z_score <- (x - mean_val) / sd_val
     }
     return(z_score)
-  })
+  }
+  
+  if (!is.null(outlier_threshold)) {
+    # Identify and replace values exceeding the threshold with NA
+    outliers <- abs(column_stats) > outlier_threshold
+    column_stats[outliers] <- NA
+  }
   
   return(column_stats)
 }
 
-z_scores <- calculate_z_scores(data)
+# Call the function with an outlier threshold
+z_scores <- calculate_z_scores(data, outlier_threshold = 2)
 print(round(z_scores, 4))
